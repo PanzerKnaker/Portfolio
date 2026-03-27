@@ -1,0 +1,581 @@
+openapi: 3.0.1
+info:
+  title: API кинотеатра Искорка
+  description: |
+    __API кинотеатра "Искорка"__
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: '1.0.0' 
+
+servers:
+  - url: https://cinemaspark.com/pt4-192.168.05.38
+    description:
+      сервер кинотеатра
+
+paths:
+  /session/{idsession}:
+    get:
+      summary: Узнать наличие мест на сеанс
+      description: |
+        Метод получения количества мест на сеанс <br/>
+      tags:
+        - Покупатель
+      parameters: 
+        - name: idsession
+          description: Идентификатор киносеанса
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 52 
+
+      
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                description: данные количества мест на сеанс
+                properties:
+                  Hall:
+                    type: object
+                    description: Информация о зале
+                    properties:
+                      hallnumber:
+                        type: integer
+                        example: 2
+                      amountseats:
+                        type: integer
+                        example: 250
+                      amountfreeseats:
+                        type: integer
+                        example: 153
+            application/xml:
+              schema:
+                xml:
+                  name: getseats
+                type: object
+                description: данные количества мест на сеанс
+                properties:
+                  Hall:
+                    type: object
+                    description: Информация о зале
+                    properties:
+                      hallnumber:
+                        type: integer
+                        example: 2
+                      amountseats:
+                        type: integer
+                        example: 250
+                      amountfreeseats:
+                        type: integer
+                        example: 153
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage404'
+        '400':
+          description: invalid query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage400'
+                
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+
+
+
+  /sessions:
+    get:
+      summary: Узнать все киносеансы за день
+      description: |
+        Метод получения киносеансов за день <br/>
+      tags:
+        - Покупатель
+      parameters: 
+        - name: date
+          description: Дата показа киносеансов
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          description: максимальное кол-во элементов на странице
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: Количество показанных элементов 
+          required: true
+          schema:
+            type: string
+            
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    sessions:
+                      type: array
+                      description: список киносеансов на день
+                      items:
+                        type: object
+                        description: киносеанс
+                        properties:
+                          idsession:
+                            $ref: '#/components/schemas/Idsession'
+                          idmovie:
+                            type: integer
+                            example: 412
+                            description: Идентификатор фильма
+                          datetimesession:
+                            type: string
+                            format: date-time
+                            description: Дата и время сеанса
+                          pricesession:
+                            type: string
+                            example: "450.00"
+                            description: Стоимость сеанса
+                    pagination: 
+                        $ref: '#/components/schemas/Pagination'
+                      
+                      
+                      
+                      
+                      
+            application/xml:
+              schema:
+                xml:
+                  name: daysessions
+                type: object
+                properties:
+                    sessions:
+                      type: array
+                      description: список киносеансов на день
+                      items:
+                        type: object
+                        description: киносеанс
+                        properties:
+                          idsession:
+                            $ref: '#/components/schemas/Idsession'
+                          idmovie:
+                            type: integer
+                            example: 412
+                            description: Идентификатор фильма
+                          datetimesession:
+                            type: string
+                            format: date-time
+                            description: Дата и время сеанса
+                          pricesession:
+                            type: string
+                            example: "450.00"
+                            description: Стоимость сеанса
+                    pagination: 
+                        $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage404'
+        '400':
+          description: invalid query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage400'
+                
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+
+
+
+  /session/{idsession}/datetimesession:
+    patch:
+      summary: Изменение даты и времени киносеанса
+      description: |
+        Метод изменения даты и времени киносеанса.
+      tags:
+        - Администратор
+      parameters: 
+        - name: idsession
+          description: Идентификатор изменяемого киносеанса
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 52 
+
+
+      requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Новая дата и время киносеанса
+                properties: 
+                  datetimesession:
+                    type: string
+                    format: date-time
+                    description: Дата и время сеанса
+          
+
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                description: данные измененного киносеанса
+                properties:
+                  idsession:
+                    $ref: '#/components/schemas/Idsession'
+                  idmovie:
+                    type: integer
+                    example: 412
+                    description: Идентификатор фильма
+                  datetimesession:
+                    type: string
+                    format: date-time
+                    description: Дата и время сеанса
+                  pricesession:
+                    type: string
+                    example: "450.00"
+                    description: Стоимость сеанса
+            application/xml:
+              schema:
+                xml:
+                  name: changedsession
+                type: object
+                description: данные измененного киносеанса
+                properties:
+                  idsession:
+                    $ref: '#/components/schemas/Idsession'
+                  idmovie:
+                    type: integer
+                    example: 412
+                    description: Идентификатор фильма
+                  datetimesession:
+                    type: string
+                    format: date-time
+                    description: Дата и время сеанса
+                  pricesession:
+                    type: string
+                    example: "450.00"
+                    description: Стоимость сеанса
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage404'
+        '400':
+          description: invalid query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage400'
+                
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+
+  /tickets:
+    post: 
+      summary: Бронирование места на киносеанс
+      description: |
+        Метод создания брони на киносеанс.
+      tags:
+        - Покупатель
+      requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                description: данные измененного киносеанса
+                properties:
+                  idsession:
+                    $ref: '#/components/schemas/Idsession'
+                  seats:
+                    type: array
+                    description: Места
+                    items:
+                      type: object
+                      description: Место в зале  
+                      properties:
+                        numberrow:
+                          type: integer
+                          example: 3
+                          description: Номер ряда
+                        numberseat: 
+                          type: integer
+                          example: 10
+                          description: Номер ряда
+                  clientfullname:
+                    type: string
+                    example: "БорисовБорисБорисович"
+                    description: ФИО покупателя
+                  clientphone:
+                    type: string
+                    pattern: \+7\(9\d{2}\)\d{3}-\d{2}-\d{2}
+                    description: Телефон покупателя
+
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                description: данные измененного киносеанса
+                properties:
+                  idticket:
+                    type: integer
+                    example: 3
+                    description: Идентификатор билета
+                  idsession:
+                    $ref: '#/components/schemas/Idsession'
+                  seats:
+                    type: array
+                    description: Места
+                    items:
+                      type: object
+                      description: Место в зале  
+                      properties:
+                        numberrow:
+                          type: integer
+                          example: 3
+                          description: Номер ряда
+                        numberseat: 
+                          type: integer
+                          example: 10
+                          description: Номер ряда
+                        seatstate:
+                          type: integer
+                          default: true
+                          description: Статус места
+                  clientfullname:
+                    type: string
+                    example: "БорисовБорисБорисович"
+                    description: ФИО покупателя
+                  clientphone:
+                    type: string
+                    pattern: \+7\(9\d{2}\)\d{3}-\d{2}-\d{2}
+                    description: Телефон покупателя
+                  ticketprice:
+                    type: string
+                    example: "900.00"
+                    description: Стоимость билета
+            application/xml:
+              schema:
+                xml:
+                  name: newticket
+                type: object
+                description: данные измененного киносеанса
+                properties:
+                  idticket:
+                    type: integer
+                    example: 3
+                    description: Идентификатор билета
+                  idsession:
+                    $ref: '#/components/schemas/Idsession'
+                  seats:
+                    type: array
+                    description: Места
+                    items:
+                      type: object
+                      description: Место в зале  
+                      properties:
+                        numberrow:
+                          type: integer
+                          example: 3
+                          description: Номер ряда
+                        numberseat: 
+                          type: integer
+                          example: 10
+                          description: Номер ряда
+                        seatstate:
+                          type: integer
+                          default: true
+                          description: Статус места
+                  clientfullname:
+                    type: string
+                    example: "БорисовБорисБорисович"
+                    description: ФИО покупателя
+                  clientphone:
+                    type: string
+                    pattern: \+7\(9\d{2}\)\d{3}-\d{2}-\d{2}
+                    description: Телефон покупателя
+                  ticketprice:
+                    type: string
+                    example: "900.00"
+                    description: Стоимость билета
+        '400':
+          description: invalid query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage400'
+                
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+
+
+  /tickets/{idticket}:
+    patch:
+      summary: Отменить бронь
+      description: |
+        Метод отмены бронирования мест.
+      tags:
+        - Покупатель
+      parameters: 
+        - name: idticket
+          description: Идентификатор удаляемого билета
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2048 
+
+
+      requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  ticketstate:
+                    type: string
+                    default: "canceled"
+                    description: Статус билета "отменен"
+          
+
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                description: данные удаленного билета
+                properties:
+                  idticket:
+                    type: integer
+                    example: 2048
+                    description: Идентификатор удаленного билета
+                  ticketstate:
+                    type: string
+                    enum:
+                      - canceled
+                    description: Статус билета
+            application/xml:
+              schema:
+                xml:
+                  name: deletedticket
+                type: object
+                description: данные удаленного билета
+                properties:
+                  idticket:
+                    type: integer
+                    example: 2048
+                    description: Идентификатор удаленного билета
+                  ticketstate:
+                    type: string
+                    enum:
+                      - canceled
+                    description: Статус билета
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage404'
+        '400':
+          description: invalid query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage400'
+                
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+    
+
+components:
+  schemas:
+    Idsession:
+       type: integer
+       example: 105
+       description: Идентификатор сеанса
+    ErrorMessage404:
+      type: object
+      properties:
+        code:
+          type: string
+          example: 404
+        textMessage:
+          type: string
+          example: Объект не найден
+    ErrorMessage400:
+      type: object
+      properties:
+        code:
+          type: string
+          example: 400
+        textMessage:
+          type: string
+          example: Некорректный запрос
+    ErrorMessage500:
+      type: object
+      properties:
+        code:
+          type: string
+          example: 500
+        textMessage:
+          type: string
+          example: Ошибка сервера
+    Pagination:
+      type: object
+      description: объект пагинации
+      properties:
+        limit:
+          type: integer
+          example: 5
+        offset:
+          type: integer
+          example: 45
+        totalCount:
+          type: integer
+          example: 100
